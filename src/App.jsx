@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
+import photo1 from './assets/photo1.clean.jpeg'
+import photo2 from './assets/photo2.jpeg'
+import photo3 from './assets/photo3.jpeg'
 
 function App() {
+  const PHOTO1_FALLBACK_JPEG = `${import.meta.env.BASE_URL}images/photo1.jpeg`
+  const PHOTO1_FALLBACK_PNG = `${import.meta.env.BASE_URL}images/photo1.png`
+
   const getInitialTheme = () => {
     if (typeof window === 'undefined') return 'light'
     const stored = window.localStorage.getItem('theme')
@@ -32,12 +38,57 @@ function App() {
         { src: '/images/sketch3.jpeg', alt: 'Sketch 3' },
       ],
     },
+    other: {
+      title: 'Other',
+      items: [
+        {
+          src: '/images/other/191DFEB2-D732-4E4B-8A3E-1BAC77533FBD_1_105_c.jpeg',
+          alt: 'Other 1',
+        },
+        {
+          src: '/images/other/1E907CC6-6667-4659-86FF-7DA31F40F709_1_105_c.jpeg',
+          alt: 'Other 2',
+        },
+        {
+          src: '/images/other/5796B7E6-95B3-4994-AAE0-6CD74906F59C_1_201_a.jpeg',
+          alt: 'Other 3',
+        },
+        {
+          src: '/images/other/5BB322CE-EB4C-44A7-95E7-9F2596F2E6A5_1_201_a.jpeg',
+          alt: 'Other 4',
+        },
+        {
+          src: '/images/other/6941A20A-18B8-431B-AF74-73F0FDE6ECD8_1_105_c.jpeg',
+          alt: 'Other 5',
+        },
+        {
+          src: '/images/other/97A7AD42-0D6B-4305-BE18-77A8580AE4A2_1_105_c.jpeg',
+          alt: 'Other 6',
+        },
+        {
+          src: '/images/other/9F71B33E-702D-48C7-8F8A-270FA4AA0601_1_105_c.jpeg',
+          alt: 'Other 7',
+        },
+        {
+          src: '/images/other/ABEEC602-1666-45FF-8732-F7D4DF1DC072_1_105_c.jpeg',
+          alt: 'Other 8',
+        },
+        {
+          src: '/images/other/D773E69C-A38D-41AB-8813-5594986E6EAE_1_102_a.jpeg',
+          alt: 'Other 9',
+        },
+        {
+          src: '/images/other/DAB3FE2C-3B05-4819-9FAB-0549E8E5D660_1_201_a.jpeg',
+          alt: 'Other 10',
+        },
+      ],
+    },
   }
 
   const aboutPhotos = [
-    { src: '/images/photo1.jpeg', alt: 'Photo 1' },
-    { src: '/images/photo2.jpeg', alt: 'Photo 2' },
-    { src: '/images/photo3.jpeg', alt: 'Photo 3' },
+    { src: photo1, alt: 'Photo 1' },
+    { src: photo2, alt: 'Photo 2' },
+    { src: photo3, alt: 'Photo 3' },
   ]
 
   const [activeArt, setActiveArt] = useState(null)
@@ -48,13 +99,47 @@ function App() {
   })
   const [pulledPhoto, setPulledPhoto] = useState(null)
   const [dissolvePhoto, setDissolvePhoto] = useState(null)
-  const pullTimers = useRef({})
   const dissolveTimers = useRef({})
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
     window.localStorage.setItem('theme', theme)
   }, [theme])
+
+  useEffect(() => {
+    const preload = document.createElement('link')
+    preload.rel = 'preload'
+    preload.as = 'image'
+    preload.href = photo1
+    document.head.appendChild(preload)
+
+    const image = new Image()
+    image.src = photo1
+    const fallbackJpeg = new Image()
+    fallbackJpeg.src = PHOTO1_FALLBACK_JPEG
+
+    return () => {
+      if (document.head.contains(preload)) {
+        document.head.removeChild(preload)
+      }
+    }
+  }, [PHOTO1_FALLBACK_JPEG])
+
+  const handlePhoto1Error = (event) => {
+    const imageEl = event.currentTarget
+    const step = Number(imageEl.dataset.fallbackStep ?? '0')
+
+    if (step === 0) {
+      imageEl.dataset.fallbackStep = '1'
+      imageEl.src = PHOTO1_FALLBACK_JPEG
+      return
+    }
+
+    if (step === 1) {
+      imageEl.dataset.fallbackStep = '2'
+      imageEl.src = PHOTO1_FALLBACK_PNG
+    }
+  }
 
   const openLightbox = (galleryKey, index) => {
     setLightbox({ open: true, galleryKey, index })
@@ -84,14 +169,11 @@ function App() {
     if (pulledPhoto !== null && pulledPhoto !== index) {
       setPulledPhoto(null)
     }
-    clearTimeout(pullTimers.current[index])
-    pullTimers.current[index] = window.setTimeout(() => {
-      setPulledPhoto(index)
-    }, 1000)
+    setDissolvePhoto(null)
+    setPulledPhoto(index)
   }
 
   const handlePhotoLeave = (index) => {
-    clearTimeout(pullTimers.current[index])
     if (pulledPhoto === index) {
       setPulledPhoto(null)
     }
@@ -103,7 +185,6 @@ function App() {
   }
 
   const handlePhotoClick = (index) => {
-    clearTimeout(pullTimers.current[index])
     setDissolvePhoto(null)
     setPulledPhoto((prev) => (prev === index ? null : index))
   }
@@ -158,7 +239,11 @@ function App() {
           <div className="hero-content">
             <h1>Tessie Bunnell</h1>
             <div className="hero-links">
-              <a href="https://open.spotify.com" target="_blank" rel="noreferrer">
+              <a
+                href="https://open.spotify.com/artist/2u2FvDx9Giu2HO5xvkG80k"
+                target="_blank"
+                rel="noreferrer"
+              >
                 <img
                   className="social-icon"
                   src="https://cdn.simpleicons.org/spotify"
@@ -167,7 +252,7 @@ function App() {
                 />
                 <span>Spotify</span>
               </a>
-              <a href="https://www.instagram.com" target="_blank" rel="noreferrer">
+              <a href="https://www.instagram.com/tessiebunnell/" target="_blank" rel="noreferrer">
                 <img
                   className="social-icon"
                   src="https://cdn.simpleicons.org/instagram"
@@ -176,7 +261,11 @@ function App() {
                 />
                 <span>Instagram</span>
               </a>
-              <a href="https://www.linkedin.com" target="_blank" rel="noreferrer">
+              <a
+                href="https://www.linkedin.com/in/tessie-bunnell-145b01341/"
+                target="_blank"
+                rel="noreferrer"
+              >
                 <svg
                   className="social-icon social-icon--linkedin"
                   viewBox="0 0 448 512"
@@ -190,138 +279,191 @@ function App() {
             </div>
           </div>
           <div className="photo-frame" aria-label="Tessie Bunnell profile photo">
-            <img src="/images/photo1.jpeg" alt="Tessie Bunnell profile" />
+            <img
+              src={photo1}
+              alt="Tessie Bunnell profile"
+              data-fallback-step="0"
+              loading="eager"
+              fetchPriority="high"
+              decoding="sync"
+              onError={handlePhoto1Error}
+            />
           </div>
         </div>
       </header>
 
-      <section className="card about" id="about">
-        <h2>About</h2>
-        <p className="about-blurb">
-          Hi, I’m Tessie Bunnell — a 20-year-old student and musician originally from
-          Seattle, WA. I’m currently a sophomore at Drexel University studying Music
-          Industry and pursuing a bachelor’s degree in Business. I was born and raised
-          in Shanghai, but I also consider Seattle home since I spent the latter half
-          of my life there. Growing up between two cities has shaped both my
-          perspective and my sound. I create folk and indie music, play guitar, and
-          sing — music has always been the biggest part of my life. At Drexel, I’ve
-          immersed myself in the world of the music industry and discovered a strong
-          interest in publishing, A&R, and marketing. I’m excited to use both my
-          creative and business skills to collaborate, build meaningful projects, and
-          create magic with other people.
-        </p>
-        <div className="carousel" aria-label="Photo carousel">
-          {aboutPhotos.map((photo, index) => (
-            <div
-              key={photo.src}
-              className={`carousel-card ${
-                pulledPhoto === index ? 'is-pulled' : ''
-              } ${dissolvePhoto === index ? 'is-dissolve' : ''}`}
-              onMouseEnter={() => handlePhotoEnter(index)}
-              onMouseLeave={() => handlePhotoLeave(index)}
-              onClick={() => handlePhotoClick(index)}
-            >
-              <img className="carousel-photo" src={photo.src} alt={photo.alt} />
+      <div className="content-columns">
+        <div className="content-column content-column--left">
+          <section className="card about" id="about">
+            <h2>About</h2>
+            <p className="about-blurb">
+              Hi, I’m Tessie Bunnell — a 20-year-old student and musician originally
+              from Seattle, WA. I’m currently a sophomore at Drexel University studying
+              Music Industry and pursuing a bachelor’s degree in Business. I was born
+              and raised in Shanghai, but I also consider Seattle home since I spent
+              the latter half of my life there. Growing up between two cities has
+              shaped both my perspective and my sound. I create folk and indie music,
+              play guitar, and sing — music has always been the biggest part of my
+              life. At Drexel, I’ve immersed myself in the world of the music industry
+              and discovered a strong interest in publishing, A&R, and marketing. I’m
+              excited to use both my creative and business skills to collaborate, build
+              meaningful projects, and create magic with other people.
+            </p>
+            <div className="carousel" aria-label="Photo carousel">
+              {aboutPhotos.map((photo, index) => (
+                <div
+                  key={photo.src}
+                  className={`carousel-card ${
+                    pulledPhoto === index ? 'is-pulled' : ''
+                  } ${dissolvePhoto === index ? 'is-dissolve' : ''}`}
+                  onMouseEnter={() => handlePhotoEnter(index)}
+                  onMouseLeave={() => handlePhotoLeave(index)}
+                  onClick={() => handlePhotoClick(index)}
+                >
+                  <img
+                    className="carousel-photo"
+                    src={photo.src}
+                    alt={photo.alt}
+                    data-fallback-step={index === 0 ? '0' : undefined}
+                    loading={index === 0 ? 'eager' : 'lazy'}
+                    fetchPriority={index === 0 ? 'high' : 'auto'}
+                    decoding={index === 0 ? 'sync' : 'async'}
+                    onError={index === 0 ? handlePhoto1Error : undefined}
+                  />
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </section>
+          </section>
 
-      <section className="card music" id="music">
-        <h2>Music</h2>
-        <div className="music-grid">
-          <a
-            className="album album--rose"
-            href="https://open.spotify.com/track/3h1TKA52GbJFxUGO9rxhOS?si=4a06055cbc2746d4"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <img src="/images/newdays.png" alt="new days cover art" />
-            <span>new days</span>
-          </a>
-          <a
-            className="album album--amber"
-            href="https://open.spotify.com/track/0y5GDkAymUZUfA9lBorblt"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <img src="/images/barcelona.png" alt="barcelona cover art" />
-            <span>barcelona</span>
-          </a>
-          <div className="album album--note" aria-label="EP coming soon">
-            <span>EP coming</span>
-          </div>
+          <section className="card art" id="art">
+            <h2>Art</h2>
+            <div className="art-grid">
+              <button
+                className={`art-tile ${activeArt === 'main' ? 'is-active' : ''}`}
+                type="button"
+                aria-expanded={activeArt === 'main'}
+                onClick={() => toggleArt('main')}
+              >
+                Main
+              </button>
+              <button
+                className={`art-tile ${activeArt === 'sketch' ? 'is-active' : ''}`}
+                type="button"
+                aria-expanded={activeArt === 'sketch'}
+                onClick={() => toggleArt('sketch')}
+              >
+                Sketch
+              </button>
+              <button
+                className={`art-tile ${activeArt === 'other' ? 'is-active' : ''}`}
+                type="button"
+                aria-expanded={activeArt === 'other'}
+                onClick={() => toggleArt('other')}
+              >
+                Other
+              </button>
+            </div>
+            <div
+              className={`art-gallery-section ${activeArt === 'main' ? 'is-open' : ''}`}
+              id="art-main"
+            >
+              <h3>Main</h3>
+              <div className="art-gallery">
+                {galleries.main.items.map((item, index) => (
+                  <img
+                    key={item.src}
+                    src={item.src}
+                    alt={item.alt}
+                    onClick={() => openLightbox('main', index)}
+                  />
+                ))}
+              </div>
+            </div>
+            <div
+              className={`art-gallery-section ${activeArt === 'sketch' ? 'is-open' : ''}`}
+              id="art-sketch"
+            >
+              <h3>Sketch</h3>
+              <div className="art-gallery art-gallery--sketch">
+                {galleries.sketch.items.map((item, index) => (
+                  <img
+                    key={item.src}
+                    src={item.src}
+                    alt={item.alt}
+                    onClick={() => openLightbox('sketch', index)}
+                  />
+                ))}
+              </div>
+            </div>
+            <div
+              className={`art-gallery-section ${activeArt === 'other' ? 'is-open' : ''}`}
+              id="art-other"
+            >
+              <h3>Other</h3>
+              <div className="art-gallery art-gallery--other">
+                {galleries.other.items.map((item, index) => (
+                  <img
+                    key={item.src}
+                    src={item.src}
+                    alt={item.alt}
+                    onClick={() => openLightbox('other', index)}
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
         </div>
-        <div className="spotify-embeds" aria-label="Spotify embeds">
-          <iframe
-            title="Spotify player: new days"
-            src="https://open.spotify.com/embed/track/3h1TKA52GbJFxUGO9rxhOS"
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"
-          />
-          <iframe
-            title="Spotify player: barcelona"
-            src="https://open.spotify.com/embed/track/0y5GDkAymUZUfA9lBorblt"
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"
-          />
-        </div>
-        <p className="music-note">Hyperlinks go to Spotify.</p>
-      </section>
 
-      <section className="card art" id="art">
-        <h2>Art</h2>
-        <div className="art-grid">
-          <button
-            className={`art-tile ${activeArt === 'main' ? 'is-active' : ''}`}
-            type="button"
-            aria-expanded={activeArt === 'main'}
-            onClick={() => toggleArt('main')}
-          >
-            Main
-          </button>
-          <button
-            className={`art-tile ${activeArt === 'sketch' ? 'is-active' : ''}`}
-            type="button"
-            aria-expanded={activeArt === 'sketch'}
-            onClick={() => toggleArt('sketch')}
-          >
-            Sketch
-          </button>
-        </div>
-        <div
-          className={`art-gallery-section ${activeArt === 'main' ? 'is-open' : ''}`}
-          id="art-main"
-        >
-          <h3>Main</h3>
-          <div className="art-gallery">
-            {galleries.main.items.map((item, index) => (
-              <img
-                key={item.src}
-                src={item.src}
-                alt={item.alt}
-                onClick={() => openLightbox('main', index)}
+        <div className="content-column content-column--right">
+          <section className="card music" id="music">
+            <h2>Music</h2>
+            <div className="music-grid">
+              <a
+                className="album album--rose"
+                href="https://open.spotify.com/track/3h1TKA52GbJFxUGO9rxhOS?si=4a06055cbc2746d4"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <img src="/images/newdays.png" alt="new days cover art" />
+                <span>new days</span>
+              </a>
+              <a
+                className="album album--amber"
+                href="https://open.spotify.com/track/0y5GDkAymUZUfA9lBorblt"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <img src="/images/barcelona.png" alt="barcelona cover art" />
+                <span>barcelona</span>
+              </a>
+              <div className="album album--note" aria-label="EP coming soon">
+                <span>EP coming</span>
+              </div>
+            </div>
+            <div className="spotify-embeds" aria-label="Spotify embeds">
+              <iframe
+                title="Spotify player: new days"
+                src="https://open.spotify.com/embed/track/3h1TKA52GbJFxUGO9rxhOS"
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
               />
-            ))}
-          </div>
-        </div>
-        <div
-          className={`art-gallery-section ${activeArt === 'sketch' ? 'is-open' : ''}`}
-          id="art-sketch"
-        >
-          <h3>Sketch</h3>
-          <div className="art-gallery art-gallery--sketch">
-            {galleries.sketch.items.map((item, index) => (
-              <img
-                key={item.src}
-                src={item.src}
-                alt={item.alt}
-                onClick={() => openLightbox('sketch', index)}
+              <iframe
+                title="Spotify player: barcelona"
+                src="https://open.spotify.com/embed/track/0y5GDkAymUZUfA9lBorblt"
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
               />
-            ))}
-          </div>
+              <iframe
+                className="spotify-embed-square"
+                title="Spotify player: Tessie radio"
+                src="https://open.spotify.com/embed/playlist/37i9dQZF1E4viNvR0Y1zFY"
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+              />
+            </div>
+          </section>
         </div>
-      </section>
+      </div>
 
       <section className="card contact" id="contact">
         <h2>Contact</h2>
@@ -334,18 +476,18 @@ function App() {
           </li>
           <li>
             instagram{' '}
-            <a href="https://www.instagram.com/tessie" target="_blank" rel="noreferrer">
-              <span>@tessie</span>
+            <a href="https://www.instagram.com/tessiebunnell/" target="_blank" rel="noreferrer">
+              <span>@tessiebunnell</span>
             </a>
           </li>
           <li>
             linkedin{' '}
             <a
-              href="https://www.linkedin.com/in/tessie-bunnell"
+              href="https://www.linkedin.com/in/tessie-bunnell-145b01341/"
               target="_blank"
               rel="noreferrer"
             >
-              <span>/in/tessie-bunnell</span>
+              <span>/in/tessie-bunnell-145b01341</span>
             </a>
           </li>
           <li>
