@@ -9,19 +9,20 @@
 
 .card {
   background: var(--paper);
-  border: 3px solid var(--ink);
+  border: 3px solid var(--line);
   border-radius: 22px;
   padding: 28px 30px 30px;
-  box-shadow: 6px 8px 0 rgba(92, 58, 46, 0.15);
+  box-shadow: 6px 8px 0 var(--shadow);
   position: relative;
   overflow: hidden;
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .card::after {
   content: "";
   position: absolute;
   inset: 10px;
-  border: 2px solid rgba(255, 0, 150, 0.2);
+  border: 2px solid color-mix(in srgb, var(--accent) 25%, transparent);
   border-radius: 18px;
   pointer-events: none;
 }
@@ -42,6 +43,16 @@
   grid-column: span 2;
 }
 
+.hero-top {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}
+
+.hero-spacer {
+  height: 1px;
+}
+
 .nav {
   display: flex;
   justify-content: center;
@@ -56,11 +67,31 @@
   text-decoration: none;
   border-bottom: 2px solid transparent;
   padding-bottom: 4px;
+  transition: color 0.3s ease, border-color 0.3s ease;
 }
 
 .nav a:hover {
   border-bottom-color: var(--accent);
   color: var(--accent-dark);
+}
+
+.theme-toggle {
+  justify-self: end;
+  border: 2px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.theme-toggle:hover {
+  transform: translateY(-2px);
+  background: color-mix(in srgb, var(--accent) 18%, var(--paper));
 }
 
 .hero-title {
@@ -91,12 +122,13 @@
 }
 
 .photo-frame {
-  background: #fff;
-  border: 3px solid var(--ink);
+  background: var(--paper);
+  border: 3px solid var(--line);
   border-radius: 16px;
   padding: 16px;
   max-width: 260px;
   margin: 0 auto;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .photo-frame img {
@@ -120,11 +152,26 @@
   border-bottom: 2px dashed var(--accent);
   padding-bottom: 6px;
   width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .hero-links a:hover {
   color: var(--ink);
   border-bottom-color: var(--ink);
+}
+
+.social-icon {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  filter: saturate(0.9);
+  fill: currentColor;
+}
+
+.social-icon--linkedin {
+  color: #0a66c2;
 }
 
 .about h2,
@@ -139,13 +186,14 @@
 }
 
 .about-blurb {
-  background: #fff0f5;
+  background: color-mix(in srgb, var(--accent) 12%, var(--paper));
   border: 2px solid var(--accent);
   border-radius: 14px;
   padding: 16px 18px;
   font-family: var(--script);
   font-size: 1.2rem;
   margin-bottom: 18px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .carousel {
@@ -159,10 +207,10 @@
   width: 100%;
   height: 150px;
   object-fit: cover;
-  border: 2px solid var(--ink);
+  border: 2px solid var(--line);
   border-radius: 12px;
   aspect-ratio: 4 / 3;
-  background: #fff;
+  background: var(--paper);
   transition: transform 0.35s ease, box-shadow 0.35s ease;
   transform-origin: center;
   will-change: transform;
@@ -170,7 +218,7 @@
 
 .carousel-photo:hover {
   transform: translateY(-6px) scale(1.04);
-  box-shadow: 0 12px 0 rgba(92, 58, 46, 0.18);
+  box-shadow: 0 12px 0 var(--shadow-strong);
 }
 
 .music-grid {
@@ -180,8 +228,8 @@
 }
 
 .album {
-  background: #fff;
-  border: 2px solid var(--ink);
+  background: var(--paper);
+  border: 2px solid var(--line);
   border-radius: 12px;
   padding: 16px;
   aspect-ratio: 1 / 1;
@@ -201,12 +249,12 @@
   height: 120px;
   object-fit: cover;
   border-radius: 10px;
-  border: 2px solid rgba(92, 58, 46, 0.35);
+  border: 2px solid color-mix(in srgb, var(--line) 60%, transparent);
 }
 
 .album:hover {
   transform: translateY(-4px) rotate(-1deg);
-  box-shadow: 0 10px 0 rgba(92, 58, 46, 0.18);
+  box-shadow: 0 10px 0 var(--shadow-strong);
 }
 
 .album--rose {
@@ -218,7 +266,7 @@
 }
 
 .album--note {
-  background: #fff7cc;
+  background: color-mix(in srgb, var(--accent) 12%, var(--paper));
   border-style: dashed;
   cursor: default;
 }
@@ -228,6 +276,22 @@
   margin-top: 12px;
   font-size: 0.9rem;
   color: var(--ink);
+}
+
+.spotify-embeds {
+  margin-top: 18px;
+  display: grid;
+  gap: 14px;
+}
+
+.spotify-embeds iframe {
+  width: 100%;
+  height: 152px;
+  border: 0;
+  border-radius: 16px;
+  box-shadow: 0 12px 0 var(--shadow);
+  background: var(--paper);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .art-grid {
@@ -249,11 +313,12 @@
   letter-spacing: 0.14em;
   display: grid;
   place-items: center;
-  background: #fff;
+  background: var(--paper);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .art-tile:hover {
-  background: #ffe0ef;
+  background: color-mix(in srgb, var(--accent) 22%, var(--paper));
   color: var(--ink);
 }
 
@@ -284,8 +349,8 @@
   height: 140px;
   object-fit: cover;
   border-radius: 14px;
-  border: 2px solid var(--ink);
-  background: #fff;
+  border: 2px solid var(--line);
+  background: var(--paper);
   transition: transform 0.35s ease, box-shadow 0.35s ease;
   transform-origin: center;
   will-change: transform;
@@ -294,7 +359,7 @@
 
 .art-gallery img:hover {
   transform: translateY(-6px) scale(1.04);
-  box-shadow: 0 12px 0 rgba(92, 58, 46, 0.18);
+  box-shadow: 0 12px 0 var(--shadow-strong);
 }
 
 .lightbox {
@@ -308,7 +373,7 @@
 .lightbox-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(40, 26, 20, 0.72);
+  background: var(--overlay);
 }
 
 .lightbox-content {
@@ -331,9 +396,9 @@
   position: absolute;
   inset: 0;
   border-radius: 18px;
-  border: 2px solid var(--ink);
-  background: #fff;
-  box-shadow: 0 18px 0 rgba(92, 58, 46, 0.2);
+  border: 2px solid var(--line);
+  background: var(--paper);
+  box-shadow: 0 18px 0 var(--shadow-strong);
   overflow: hidden;
   transition: transform 0.35s ease, opacity 0.35s ease;
 }
@@ -363,20 +428,20 @@
 }
 
 .lightbox-nav {
-  border: 2px solid var(--ink);
-  background: #fff;
+  border: 2px solid var(--line);
+  background: var(--paper);
   color: var(--ink);
   font-family: var(--mono);
   font-size: 1.2rem;
   padding: 10px 14px;
   border-radius: 999px;
   cursor: pointer;
-  transition: transform 0.2s ease, background 0.2s ease;
+  transition: transform 0.2s ease, background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .lightbox-nav:hover {
   transform: translateY(-2px);
-  background: #ffe0ef;
+  background: color-mix(in srgb, var(--accent) 18%, var(--paper));
 }
 
 .lightbox-close {
@@ -385,7 +450,7 @@
   right: 20px;
   z-index: 2;
   border: 2px solid var(--accent);
-  background: #fff;
+  background: var(--paper);
   color: var(--accent-dark);
   font-family: var(--mono);
   text-transform: uppercase;
@@ -393,6 +458,7 @@
   padding: 8px 12px;
   border-radius: 999px;
   cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .contact {
@@ -437,6 +503,20 @@
   .hero,
   .contact {
     grid-column: span 1;
+  }
+
+  .hero-top {
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+  }
+
+  .hero-spacer {
+    display: none;
+  }
+
+  .nav {
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
 
   .hero-body {

@@ -1,7 +1,15 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 
 function App() {
+  const getInitialTheme = () => {
+    if (typeof window === 'undefined') return 'light'
+    const stored = window.localStorage.getItem('theme')
+    if (stored === 'light' || stored === 'dark') return stored
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  }
+
+  const [theme, setTheme] = useState(getInitialTheme)
   const galleries = {
     main: {
       title: 'Main',
@@ -31,6 +39,11 @@ function App() {
     galleryKey: 'main',
     index: 0,
   })
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    window.localStorage.setItem('theme', theme)
+  }, [theme])
 
   const openLightbox = (galleryKey, index) => {
     setLightbox({ open: true, galleryKey, index })
@@ -64,12 +77,24 @@ function App() {
   return (
     <div className="page">
       <header className="card hero" id="home">
-        <nav className="nav">
-          <a href="#about">about</a>
-          <a href="#music">music</a>
-          <a href="#art">art</a>
-          <a href="#contact">contact</a>
-        </nav>
+        <div className="hero-top">
+          <div className="hero-spacer" aria-hidden="true" />
+          <nav className="nav">
+            <a href="#about">about</a>
+            <a href="#music">music</a>
+            <a href="#art">art</a>
+            <a href="#contact">contact</a>
+          </nav>
+          <button
+            className="theme-toggle"
+            type="button"
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-pressed={theme === 'dark'}
+            onClick={() => setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))}
+          >
+            <span aria-hidden="true">{theme === 'dark' ? '☀️' : '🌙'}</span>
+          </button>
+        </div>
         <div className="hero-title">
           <span className="hero-kicker">Tessie</span>
           <h1>Tessie Bunnell</h1>
@@ -80,13 +105,33 @@ function App() {
           </div>
           <div className="hero-links">
             <a href="https://open.spotify.com" target="_blank" rel="noreferrer">
-              Spotify
+              <img
+                className="social-icon"
+                src="https://cdn.simpleicons.org/spotify"
+                alt=""
+                aria-hidden="true"
+              />
+              <span>Spotify</span>
             </a>
             <a href="https://www.instagram.com" target="_blank" rel="noreferrer">
-              Instagram
+              <img
+                className="social-icon"
+                src="https://cdn.simpleicons.org/instagram"
+                alt=""
+                aria-hidden="true"
+              />
+              <span>Instagram</span>
             </a>
             <a href="https://www.linkedin.com" target="_blank" rel="noreferrer">
-              LinkedIn
+              <svg
+                className="social-icon social-icon--linkedin"
+                viewBox="0 0 448 512"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path d="M100.28 448H7.4V148.9h92.88zM53.79 108.1C24.11 108.1 0 83.5 0 53.8a53.79 53.79 0 0 1 107.58 0c0 29.7-24.1 54.3-53.79 54.3zM447.9 448h-92.68V302.4c0-34.7-.7-79.2-48.29-79.2-48.29 0-55.69 37.7-55.69 76.7V448h-92.78V148.9h89.08v40.8h1.3c12.4-23.5 42.69-48.3 87.88-48.3 94 0 111.28 61.9 111.28 142.3V448z" />
+              </svg>
+              <span>LinkedIn</span>
             </a>
           </div>
         </div>
@@ -138,6 +183,20 @@ function App() {
           <div className="album album--note" aria-label="EP coming soon">
             <span>EP coming</span>
           </div>
+        </div>
+        <div className="spotify-embeds" aria-label="Spotify embeds">
+          <iframe
+            title="Spotify player: new days"
+            src="https://open.spotify.com/embed/track/3h1TKA52GbJFxUGO9rxhOS"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+          />
+          <iframe
+            title="Spotify player: barcelona"
+            src="https://open.spotify.com/embed/track/0y5GDkAymUZUfA9lBorblt"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+          />
         </div>
         <p className="music-note">Hyperlinks go to Spotify.</p>
       </section>
