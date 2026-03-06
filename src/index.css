@@ -5,13 +5,13 @@
   line-height: 1.5;
   font-weight: 400;
   color: #222;
-  background-color: #84a8e3;
+  background-color: #3895a8;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  --bg: #84a8e3;
-  --bg-pattern: linear-gradient(180deg, #96b9ec 0%, #84a8e3 58%, #7ea3e0 100%);
+  --bg: #3895a8;
+  --bg-pattern: linear-gradient(180deg, #4fa9bb 0%, #3895a8 58%, #2f889b 100%);
   --paper: #ffffff;
   --ink: #222;
   --accent: #ff6fa8;
@@ -81,6 +81,21 @@ a {
   pointer-events: none;
 }
 
+.sky-grass-layer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: clamp(62px, 8.5vw, 128px);
+  z-index: 0;
+  pointer-events: none;
+  background-image: url('/images/grass.png');
+  background-repeat: repeat-x;
+  background-position: center bottom;
+  background-size: auto 100%;
+  image-rendering: auto;
+}
+
 .sky-cloud {
   position: absolute;
   top: var(--cloud-top);
@@ -110,8 +125,12 @@ a {
     transform: translate3d(-12vw, 0, 0) scale(var(--cloud-depth));
   }
 
+  50% {
+    transform: translate3d(78vw, -0.8vh, 0) scale(var(--cloud-depth));
+  }
+
   to {
-    transform: translate3d(166vw, 0, 0) scale(var(--cloud-depth));
+    transform: translate3d(166vw, 0.3vh, 0) scale(var(--cloud-depth));
   }
 }
 
@@ -120,8 +139,12 @@ a {
     transform: translate3d(12vw, 0, 0) scale(var(--cloud-depth));
   }
 
+  50% {
+    transform: translate3d(-78vw, -0.7vh, 0) scale(var(--cloud-depth));
+  }
+
   to {
-    transform: translate3d(-166vw, 0, 0) scale(var(--cloud-depth));
+    transform: translate3d(-166vw, 0.35vh, 0) scale(var(--cloud-depth));
   }
 }
 

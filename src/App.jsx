@@ -7,6 +7,8 @@ import photo3 from './assets/photo3.jpeg'
 function App() {
   const PHOTO1_FALLBACK_JPEG = `${import.meta.env.BASE_URL}images/photo1.jpeg`
   const PHOTO1_FALLBACK_PNG = `${import.meta.env.BASE_URL}images/photo1.png`
+  const CLOUD_SRC = `${import.meta.env.BASE_URL}images/cloud.png`
+  const GRASS_SRC = `${import.meta.env.BASE_URL}images/grass.png`
 
   const getInitialTheme = () => {
     if (typeof window === 'undefined') return 'light'
@@ -15,20 +17,21 @@ function App() {
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   }
 
-  const createCloud = (index, withOffset = true) => {
+  const createCloud = (id, withOffset = true) => {
     const size = 120 + Math.random() * 170
     const top =
-      Math.random() < 0.8
-        ? 1 + Math.pow(Math.random(), 1.6) * 48
-        : 52 + Math.random() * 18
+      Math.random() < 0.72
+        ? 2 + Math.pow(Math.random(), 1.35) * 58
+        : 56 + Math.random() * 18
     const duration = 180 + Math.random() * 220
     const delay = withOffset ? -Math.random() * duration : 0
     const opacity = 0.24 + Math.random() * 0.34
     const blur = Math.random() * 1.6
     const depth = 0.9 + Math.random() * 0.5
+    const direction = Math.random() > 0.5 ? 'cloud-drift-left' : 'cloud-drift-right'
 
     return {
-      id: `cloud-${index}-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+      id,
       size,
       top,
       duration,
@@ -36,18 +39,19 @@ function App() {
       opacity,
       blur,
       depth,
+      direction,
     }
   }
 
   const [theme, setTheme] = useState(getInitialTheme)
   const [skyClouds, setSkyClouds] = useState(() =>
-    Array.from({ length: 8 }, (_, index) => createCloud(index, true))
+    Array.from({ length: 10 }, (_, index) => createCloud(`cloud-${index}`, true))
   )
 
   const respawnCloud = (index) => {
     setSkyClouds((prev) =>
       prev.map((cloud, cloudIndex) =>
-        cloudIndex === index ? createCloud(cloudIndex, false) : cloud
+        cloudIndex === index ? createCloud(cloud.id, false) : cloud
       )
     )
   }
@@ -174,6 +178,23 @@ function App() {
   }, [theme])
 
   useEffect(() => {
+    const cloudPreload = document.createElement('link')
+    cloudPreload.rel = 'preload'
+    cloudPreload.as = 'image'
+    cloudPreload.href = CLOUD_SRC
+    document.head.appendChild(cloudPreload)
+
+    const grassPreload = document.createElement('link')
+    grassPreload.rel = 'preload'
+    grassPreload.as = 'image'
+    grassPreload.href = GRASS_SRC
+    document.head.appendChild(grassPreload)
+
+    const cloudImage = new Image()
+    cloudImage.src = CLOUD_SRC
+    const grassImage = new Image()
+    grassImage.src = GRASS_SRC
+
     const preload = document.createElement('link')
     preload.rel = 'preload'
     preload.as = 'image'
@@ -186,11 +207,17 @@ function App() {
     fallbackJpeg.src = PHOTO1_FALLBACK_JPEG
 
     return () => {
+      if (document.head.contains(cloudPreload)) {
+        document.head.removeChild(cloudPreload)
+      }
+      if (document.head.contains(grassPreload)) {
+        document.head.removeChild(grassPreload)
+      }
       if (document.head.contains(preload)) {
         document.head.removeChild(preload)
       }
     }
-  }, [PHOTO1_FALLBACK_JPEG])
+  }, [CLOUD_SRC, GRASS_SRC, PHOTO1_FALLBACK_JPEG])
 
   const handlePhoto1Error = (event) => {
     const imageEl = event.currentTarget
@@ -284,26 +311,29 @@ function App() {
   return (
     <>
       {theme !== 'dark' && (
-        <div className="sky-cloud-layer" aria-hidden="true">
-          {skyClouds.map((cloud, index) => (
-            <img
-              key={cloud.id}
-              className="sky-cloud cloud-drift-left"
-              src="/images/cloud.png"
-              alt=""
-              onAnimationIteration={() => respawnCloud(index)}
-              style={{
-                '--cloud-size': `${cloud.size}px`,
-                '--cloud-top': `${cloud.top}%`,
-                '--cloud-duration': `${cloud.duration}s`,
-                '--cloud-delay': `${cloud.delay}s`,
-                '--cloud-opacity': cloud.opacity,
-                '--cloud-blur': `${cloud.blur}px`,
-                '--cloud-depth': cloud.depth,
-              }}
-            />
-          ))}
-        </div>
+        <>
+          <div className="sky-cloud-layer" aria-hidden="true">
+            {skyClouds.map((cloud, index) => (
+              <img
+                key={cloud.id}
+                className={`sky-cloud ${cloud.direction}`}
+                src={CLOUD_SRC}
+                alt=""
+                onAnimationIteration={() => respawnCloud(index)}
+                style={{
+                  '--cloud-size': `${cloud.size}px`,
+                  '--cloud-top': `${cloud.top}%`,
+                  '--cloud-duration': `${cloud.duration}s`,
+                  '--cloud-delay': `${cloud.delay}s`,
+                  '--cloud-opacity': cloud.opacity,
+                  '--cloud-blur': `${cloud.blur}px`,
+                  '--cloud-depth': cloud.depth,
+                }}
+              />
+            ))}
+          </div>
+          <div className="sky-grass-layer" aria-hidden="true" />
+        </>
       )}
       <div className="page">
         <header className="card hero" id="home">
@@ -321,13 +351,14 @@ function App() {
             aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             aria-pressed={theme === 'dark'}
             onClick={() => setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))}
-          >
-            <span aria-hidden="true">{theme === 'dark' ? '☀️' : '🌙'}</span>
-          </button>
+          />
         </div>
         <div className="hero-body">
           <div className="hero-content">
-            <h1>Tessie Bunnell</h1>
+            <div className="hero-title-block">
+              <h1>Tessie Bunnell</h1>
+              <p className="hero-location">📍Philadelphia, PA</p>
+            </div>
             <div className="hero-links">
               <a
                 href="https://open.spotify.com/artist/2u2FvDx9Giu2HO5xvkG80k"
@@ -618,6 +649,7 @@ function App() {
             </a>
           </li>
         </ul>
+        <p className="contact-copyright">© 2026 Tessie Bunnell • Philadelphia, PA</p>
       </section>
         {lightbox.open && (
           <div className="lightbox" role="dialog" aria-modal="true">
