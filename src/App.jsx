@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './App.css'
 
 function App() {
@@ -34,11 +34,22 @@ function App() {
     },
   }
 
+  const aboutPhotos = [
+    { src: '/images/photo1.jpeg', alt: 'Photo 1' },
+    { src: '/images/photo2.jpeg', alt: 'Photo 2' },
+    { src: '/images/photo3.jpeg', alt: 'Photo 3' },
+  ]
+
+  const [activeArt, setActiveArt] = useState(null)
   const [lightbox, setLightbox] = useState({
     open: false,
     galleryKey: 'main',
     index: 0,
   })
+  const [pulledPhoto, setPulledPhoto] = useState(null)
+  const [dissolvePhoto, setDissolvePhoto] = useState(null)
+  const pullTimers = useRef({})
+  const dissolveTimers = useRef({})
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
@@ -69,10 +80,58 @@ function App() {
     })
   }
 
+  const handlePhotoEnter = (index) => {
+    if (pulledPhoto !== null && pulledPhoto !== index) {
+      setPulledPhoto(null)
+    }
+    clearTimeout(pullTimers.current[index])
+    pullTimers.current[index] = window.setTimeout(() => {
+      setPulledPhoto(index)
+    }, 1000)
+  }
+
+  const handlePhotoLeave = (index) => {
+    clearTimeout(pullTimers.current[index])
+    if (pulledPhoto === index) {
+      setPulledPhoto(null)
+    }
+    setDissolvePhoto(index)
+    clearTimeout(dissolveTimers.current[index])
+    dissolveTimers.current[index] = window.setTimeout(() => {
+      setDissolvePhoto((prev) => (prev === index ? null : prev))
+    }, 600)
+  }
+
+  const handlePhotoClick = (index) => {
+    clearTimeout(pullTimers.current[index])
+    setDissolvePhoto(null)
+    setPulledPhoto((prev) => (prev === index ? null : index))
+  }
+
+  useEffect(() => {
+    if (!lightbox.open) return
+    const handleKey = (event) => {
+      if (event.key === 'Escape') {
+        closeLightbox()
+      }
+      if (event.key === 'ArrowLeft') {
+        goPrev()
+      }
+      if (event.key === 'ArrowRight') {
+        goNext()
+      }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [lightbox.open])
+
   const activeGallery = galleries[lightbox.galleryKey]
   const activeItems = activeGallery.items
   const prevIndex = (lightbox.index - 1 + activeItems.length) % activeItems.length
   const nextIndex = (lightbox.index + 1) % activeItems.length
+  const toggleArt = (key) => {
+    setActiveArt((prev) => (prev === key ? null : key))
+  }
 
   return (
     <div className="page">
@@ -95,44 +154,43 @@ function App() {
             <span aria-hidden="true">{theme === 'dark' ? '☀️' : '🌙'}</span>
           </button>
         </div>
-        <div className="hero-title">
-          <span className="hero-kicker">Tessie</span>
-          <h1>Tessie Bunnell</h1>
-        </div>
         <div className="hero-body">
-          <div className="photo-frame" aria-label="Tessie Bunnell profile photo placeholder">
-            <img src="/images/Photo1.jpeg" alt="Tessie Bunnell profile" />
+          <div className="hero-content">
+            <h1>Tessie Bunnell</h1>
+            <div className="hero-links">
+              <a href="https://open.spotify.com" target="_blank" rel="noreferrer">
+                <img
+                  className="social-icon"
+                  src="https://cdn.simpleicons.org/spotify"
+                  alt=""
+                  aria-hidden="true"
+                />
+                <span>Spotify</span>
+              </a>
+              <a href="https://www.instagram.com" target="_blank" rel="noreferrer">
+                <img
+                  className="social-icon"
+                  src="https://cdn.simpleicons.org/instagram"
+                  alt=""
+                  aria-hidden="true"
+                />
+                <span>Instagram</span>
+              </a>
+              <a href="https://www.linkedin.com" target="_blank" rel="noreferrer">
+                <svg
+                  className="social-icon social-icon--linkedin"
+                  viewBox="0 0 448 512"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path d="M100.28 448H7.4V148.9h92.88zM53.79 108.1C24.11 108.1 0 83.5 0 53.8a53.79 53.79 0 0 1 107.58 0c0 29.7-24.1 54.3-53.79 54.3zM447.9 448h-92.68V302.4c0-34.7-.7-79.2-48.29-79.2-48.29 0-55.69 37.7-55.69 76.7V448h-92.78V148.9h89.08v40.8h1.3c12.4-23.5 42.69-48.3 87.88-48.3 94 0 111.28 61.9 111.28 142.3V448z" />
+                </svg>
+                <span>LinkedIn</span>
+              </a>
+            </div>
           </div>
-          <div className="hero-links">
-            <a href="https://open.spotify.com" target="_blank" rel="noreferrer">
-              <img
-                className="social-icon"
-                src="https://cdn.simpleicons.org/spotify"
-                alt=""
-                aria-hidden="true"
-              />
-              <span>Spotify</span>
-            </a>
-            <a href="https://www.instagram.com" target="_blank" rel="noreferrer">
-              <img
-                className="social-icon"
-                src="https://cdn.simpleicons.org/instagram"
-                alt=""
-                aria-hidden="true"
-              />
-              <span>Instagram</span>
-            </a>
-            <a href="https://www.linkedin.com" target="_blank" rel="noreferrer">
-              <svg
-                className="social-icon social-icon--linkedin"
-                viewBox="0 0 448 512"
-                aria-hidden="true"
-                focusable="false"
-              >
-                <path d="M100.28 448H7.4V148.9h92.88zM53.79 108.1C24.11 108.1 0 83.5 0 53.8a53.79 53.79 0 0 1 107.58 0c0 29.7-24.1 54.3-53.79 54.3zM447.9 448h-92.68V302.4c0-34.7-.7-79.2-48.29-79.2-48.29 0-55.69 37.7-55.69 76.7V448h-92.78V148.9h89.08v40.8h1.3c12.4-23.5 42.69-48.3 87.88-48.3 94 0 111.28 61.9 111.28 142.3V448z" />
-              </svg>
-              <span>LinkedIn</span>
-            </a>
+          <div className="photo-frame" aria-label="Tessie Bunnell profile photo">
+            <img src="/images/photo1.jpeg" alt="Tessie Bunnell profile" />
           </div>
         </div>
       </header>
@@ -153,9 +211,19 @@ function App() {
           create magic with other people.
         </p>
         <div className="carousel" aria-label="Photo carousel">
-          <img className="carousel-photo" src="/images/Photo1.jpeg" alt="Photo 1" />
-          <img className="carousel-photo" src="/images/Photo2.jpeg" alt="Photo 2" />
-          <img className="carousel-photo" src="/images/Photo3.jpeg" alt="Photo 3" />
+          {aboutPhotos.map((photo, index) => (
+            <div
+              key={photo.src}
+              className={`carousel-card ${
+                pulledPhoto === index ? 'is-pulled' : ''
+              } ${dissolvePhoto === index ? 'is-dissolve' : ''}`}
+              onMouseEnter={() => handlePhotoEnter(index)}
+              onMouseLeave={() => handlePhotoLeave(index)}
+              onClick={() => handlePhotoClick(index)}
+            >
+              <img className="carousel-photo" src={photo.src} alt={photo.alt} />
+            </div>
+          ))}
         </div>
       </section>
 
@@ -204,14 +272,27 @@ function App() {
       <section className="card art" id="art">
         <h2>Art</h2>
         <div className="art-grid">
-          <a className="art-tile" href="#art-main">
-            main
-          </a>
-          <a className="art-tile" href="#art-sketch">
-            sketch
-          </a>
+          <button
+            className={`art-tile ${activeArt === 'main' ? 'is-active' : ''}`}
+            type="button"
+            aria-expanded={activeArt === 'main'}
+            onClick={() => toggleArt('main')}
+          >
+            Main
+          </button>
+          <button
+            className={`art-tile ${activeArt === 'sketch' ? 'is-active' : ''}`}
+            type="button"
+            aria-expanded={activeArt === 'sketch'}
+            onClick={() => toggleArt('sketch')}
+          >
+            Sketch
+          </button>
         </div>
-        <div className="art-gallery-section" id="art-main">
+        <div
+          className={`art-gallery-section ${activeArt === 'main' ? 'is-open' : ''}`}
+          id="art-main"
+        >
           <h3>Main</h3>
           <div className="art-gallery">
             {galleries.main.items.map((item, index) => (
@@ -219,12 +300,15 @@ function App() {
                 key={item.src}
                 src={item.src}
                 alt={item.alt}
-                onDoubleClick={() => openLightbox('main', index)}
+                onClick={() => openLightbox('main', index)}
               />
             ))}
           </div>
         </div>
-        <div className="art-gallery-section" id="art-sketch">
+        <div
+          className={`art-gallery-section ${activeArt === 'sketch' ? 'is-open' : ''}`}
+          id="art-sketch"
+        >
           <h3>Sketch</h3>
           <div className="art-gallery art-gallery--sketch">
             {galleries.sketch.items.map((item, index) => (
@@ -232,7 +316,7 @@ function App() {
                 key={item.src}
                 src={item.src}
                 alt={item.alt}
-                onDoubleClick={() => openLightbox('sketch', index)}
+                onClick={() => openLightbox('sketch', index)}
               />
             ))}
           </div>
