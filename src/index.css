@@ -5,13 +5,13 @@
   line-height: 1.5;
   font-weight: 400;
   color: #222;
-  background-color: #3895a8;
+  background-color: #98ede5;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  --bg: #3895a8;
-  --bg-pattern: linear-gradient(180deg, #4fa9bb 0%, #3895a8 58%, #2f889b 100%);
+  --bg: #98ede5;
+  --bg-pattern: linear-gradient(180deg, #baf6f0 0%, #98ede5 58%, #82d9d2 100%);
   --paper: #ffffff;
   --ink: #222;
   --accent: #ff6fa8;

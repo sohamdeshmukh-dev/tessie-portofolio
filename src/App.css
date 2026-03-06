@@ -93,6 +93,16 @@
   align-content: start;
 }
 
+.content-column--left {
+  position: relative;
+  z-index: 4;
+}
+
+.content-column--right {
+  position: relative;
+  z-index: 1;
+}
+
 .hero-top {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -192,7 +202,7 @@
 }
 
 .hero-title-block {
-  transform: translateY(clamp(-102px, -7.2vw, -78px));
+  transform: translateY(clamp(-72px, -5.4vw, -52px));
 }
 
 .hero-location {
@@ -202,6 +212,51 @@
   font-size: 2.025rem;
   font-weight: 400;
   line-height: 1.1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32em;
+}
+
+.hero-location-icon {
+  width: 0.95em;
+  height: 0.95em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-location-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+  display: block;
+}
+
+.hero-resume-btn {
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 18px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 65%, transparent);
+  background: color-mix(in srgb, var(--accent) 16%, var(--paper));
+  color: var(--accent-dark);
+  text-decoration: none;
+  font-family: var(--mono);
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, background-color 0.3s ease,
+    border-color 0.3s ease, color 0.3s ease;
+}
+
+.hero-resume-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 28%, transparent);
+  background: color-mix(in srgb, var(--accent) 24%, var(--paper));
+  border-color: color-mix(in srgb, var(--accent) 80%, transparent);
 }
 
 .photo-frame {
@@ -287,6 +342,7 @@
 
 .about {
   overflow: visible;
+  z-index: 6;
 }
 
 .carousel {
@@ -306,6 +362,18 @@
   transition: transform 0.6s ease, box-shadow 0.6s ease;
   transition-delay: 0s;
   will-change: transform;
+}
+
+.carousel-card--left {
+  transform-origin: left center;
+}
+
+.carousel-card--center {
+  transform-origin: center center;
+}
+
+.carousel-card--right {
+  transform-origin: right center;
 }
 
 .carousel-photo {
@@ -436,23 +504,75 @@
   gap: 14px;
 }
 
-.spotify-embeds iframe {
-  width: 100%;
-  height: 152px;
-  border: 0;
+.spotify-frame-shell {
+  position: relative;
   border-radius: 16px;
-  box-shadow: 0 12px 0 var(--shadow);
-  background: var(--paper);
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid var(--line);
+  overflow: hidden;
+  background: color-mix(in srgb, var(--paper) 94%, var(--accent) 6%);
+  box-shadow: 0 10px 0 var(--shadow);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
 }
 
-.spotify-embeds .spotify-embed-square {
+.spotify-frame-shell iframe {
+  position: relative;
   width: 100%;
-  max-width: none;
-  height: auto;
-  aspect-ratio: 1 / 1;
-  justify-self: stretch;
   display: block;
+  border: 0;
+  border-radius: 16px;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.spotify-frame-shell--track iframe {
+  height: 352px;
+}
+
+.spotify-frame-shell--playlist iframe {
+  height: 760px;
+}
+
+.spotify-frame-shell.is-loaded iframe {
+  opacity: 1;
+}
+
+.spotify-placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ink) 52%, transparent);
+  background: linear-gradient(
+    110deg,
+    color-mix(in srgb, var(--paper) 92%, var(--accent) 8%),
+    color-mix(in srgb, var(--paper) 86%, var(--accent) 14%),
+    color-mix(in srgb, var(--paper) 92%, var(--accent) 8%)
+  );
+  background-size: 220% 100%;
+  animation: spotifyPlaceholderShift 1.4s ease-in-out infinite;
+}
+
+.spotify-frame-shell.is-loaded .spotify-placeholder {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.spotify-embeds.is-pending .spotify-frame-shell {
+  box-shadow: 0 8px 0 var(--shadow);
+}
+
+@keyframes spotifyPlaceholderShift {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 100% 50%;
+  }
 }
 
 .art-grid {
@@ -559,6 +679,8 @@
   z-index: 50;
   display: grid;
   place-items: center;
+  padding: clamp(14px, 2.4vw, 26px);
+  overflow: auto;
 }
 
 .lightbox-backdrop {
@@ -579,8 +701,10 @@
 
 .deck {
   position: relative;
-  width: min(70vw, 640px);
-  aspect-ratio: 4 / 3;
+  width: min(90vw, calc(82vh * var(--deck-ratio, 1)));
+  max-width: 1120px;
+  max-height: 82vh;
+  aspect-ratio: var(--deck-ratio, 1);
 }
 
 .deck-card {
@@ -591,13 +715,18 @@
   background: var(--paper);
   box-shadow: 0 18px 0 var(--shadow-strong);
   overflow: hidden;
+  display: grid;
+  place-items: center;
   transition: transform 0.35s ease, opacity 0.35s ease;
 }
 
 .deck-card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
 
 .deck-card.is-prev {
@@ -769,6 +898,14 @@
     grid-template-columns: 1fr;
   }
 
+  .spotify-frame-shell--track iframe {
+    height: 320px;
+  }
+
+  .spotify-frame-shell--playlist iframe {
+    height: 620px;
+  }
+
   .art-grid {
     grid-template-columns: 1fr;
   }
@@ -791,6 +928,14 @@
 }
 
 @media (max-width: 720px) {
+  .spotify-frame-shell--track iframe {
+    height: 300px;
+  }
+
+  .spotify-frame-shell--playlist iframe {
+    height: 540px;
+  }
+
   .art-gallery,
   .art-gallery--sketch,
   .art-gallery--other {
@@ -800,6 +945,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .hero-carousel-track {
+    animation: none;
+  }
+
+  .spotify-placeholder {
     animation: none;
   }
 }

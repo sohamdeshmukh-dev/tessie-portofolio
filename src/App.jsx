@@ -4,6 +4,27 @@ import photo1 from './assets/photo1.clean.jpeg'
 import photo2 from './assets/photo2.jpeg'
 import photo3 from './assets/photo3.jpeg'
 
+const SPOTIFY_EMBEDS = [
+  {
+    id: 'newdays',
+    type: 'track',
+    title: 'Spotify player: new days',
+    src: 'https://open.spotify.com/embed/track/3h1TKA52GbJFxUGO9rxhOS?utm_source=generator',
+  },
+  {
+    id: 'barcelona',
+    type: 'track',
+    title: 'Spotify player: barcelona',
+    src: 'https://open.spotify.com/embed/track/0y5GDkAymUZUfA9lBorblt?utm_source=generator',
+  },
+  {
+    id: 'tessie-radio',
+    type: 'playlist',
+    title: 'Spotify player: Tessie radio',
+    src: 'https://open.spotify.com/embed/playlist/37i9dQZF1E4viNvR0Y1zFY?utm_source=generator',
+  },
+]
+
 function App() {
   const PHOTO1_FALLBACK_JPEG = `${import.meta.env.BASE_URL}images/photo1.jpeg`
   const PHOTO1_FALLBACK_PNG = `${import.meta.env.BASE_URL}images/photo1.png`
@@ -150,6 +171,7 @@ function App() {
     },
     {
       src: '/images/carousel/BC9FCA7F-3193-487B-82B7-760685B6579C.jpeg',
+      fallbackSrc: photo3,
       alt: 'Carousel photo 6',
     },
     {
@@ -163,14 +185,19 @@ function App() {
   ]
 
   const [activeArt, setActiveArt] = useState(null)
+  const [spotifyEmbedsReady, setSpotifyEmbedsReady] = useState(false)
+  const [spotifyLoaded, setSpotifyLoaded] = useState({})
   const [lightbox, setLightbox] = useState({
     open: false,
     galleryKey: 'main',
     index: 0,
   })
+  const [lightboxAspectRatio, setLightboxAspectRatio] = useState(1)
   const [pulledPhoto, setPulledPhoto] = useState(null)
   const [dissolvePhoto, setDissolvePhoto] = useState(null)
   const dissolveTimers = useRef({})
+  const lightboxRatioCache = useRef({})
+  const musicSectionRef = useRef(null)
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
@@ -300,10 +327,76 @@ function App() {
     return () => window.removeEventListener('keydown', handleKey)
   }, [lightbox.open])
 
+  useEffect(() => {
+    if (spotifyEmbedsReady) return
+
+    const musicSection = musicSectionRef.current
+    if (!musicSection) return
+
+    if (!('IntersectionObserver' in window)) {
+      setSpotifyEmbedsReady(true)
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const isVisible = entries.some((entry) => entry.isIntersecting)
+        if (isVisible) {
+          setSpotifyEmbedsReady(true)
+          observer.disconnect()
+        }
+      },
+      {
+        root: null,
+        rootMargin: '380px 0px',
+        threshold: 0.08,
+      }
+    )
+
+    observer.observe(musicSection)
+    return () => observer.disconnect()
+  }, [spotifyEmbedsReady])
+
+  const handleSpotifyLoad = (id) => {
+    setSpotifyLoaded((prev) => (prev[id] ? prev : { ...prev, [id]: true }))
+  }
+
   const activeGallery = galleries[lightbox.galleryKey]
   const activeItems = activeGallery.items
   const prevIndex = (lightbox.index - 1 + activeItems.length) % activeItems.length
   const nextIndex = (lightbox.index + 1) % activeItems.length
+  const currentLightboxSrc = lightbox.open ? activeItems[lightbox.index]?.src : null
+
+  useEffect(() => {
+    if (!currentLightboxSrc) return
+
+    const cached = lightboxRatioCache.current[currentLightboxSrc]
+    if (cached) {
+      setLightboxAspectRatio(cached)
+      return
+    }
+
+    let cancelled = false
+    const image = new Image()
+    image.onload = () => {
+      if (cancelled) return
+      const ratio =
+        image.naturalWidth > 0 && image.naturalHeight > 0
+          ? image.naturalWidth / image.naturalHeight
+          : 1
+      lightboxRatioCache.current[currentLightboxSrc] = ratio
+      setLightboxAspectRatio(ratio)
+    }
+    image.onerror = () => {
+      if (!cancelled) setLightboxAspectRatio(1)
+    }
+    image.src = currentLightboxSrc
+
+    return () => {
+      cancelled = true
+    }
+  }, [currentLightboxSrc])
+
   const toggleArt = (key) => {
     setActiveArt((prev) => (prev === key ? null : key))
   }
@@ -357,8 +450,18 @@ function App() {
           <div className="hero-content">
             <div className="hero-title-block">
               <h1>Tessie Bunnell</h1>
-              <p className="hero-location">📍Philadelphia, PA</p>
+              <p className="hero-location">
+                <span className="hero-location-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <path d="M12 2.5c-3.59 0-6.5 2.91-6.5 6.5 0 4.93 6.5 12 6.5 12s6.5-7.07 6.5-12c0-3.59-2.91-6.5-6.5-6.5zm0 9a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z" />
+                  </svg>
+                </span>
+                <span>Philadelphia, PA</span>
+              </p>
             </div>
+            <a className="hero-resume-btn" href="/BunnellTessieResume.pdf" download>
+              Download Resume
+            </a>
             <div className="hero-links">
               <a
                 href="https://open.spotify.com/artist/2u2FvDx9Giu2HO5xvkG80k"
@@ -423,8 +526,18 @@ function App() {
                   className="hero-carousel-item"
                   src={photo.src}
                   alt={photo.alt}
-                  loading={index < 3 ? 'eager' : 'lazy'}
-                  decoding={index < 3 ? 'sync' : 'async'}
+                  loading={index < 1 ? 'eager' : 'lazy'}
+                  decoding={index < 1 ? 'sync' : 'async'}
+                  onError={
+                    photo.fallbackSrc
+                      ? (event) => {
+                          const image = event.currentTarget
+                          if (image.dataset.fallbackApplied === '1') return
+                          image.dataset.fallbackApplied = '1'
+                          image.src = photo.fallbackSrc
+                        }
+                      : undefined
+                  }
                 />
               ))}
             </div>
@@ -437,6 +550,16 @@ function App() {
                   alt=""
                   loading="lazy"
                   decoding="async"
+                  onError={
+                    photo.fallbackSrc
+                      ? (event) => {
+                          const image = event.currentTarget
+                          if (image.dataset.fallbackApplied === '1') return
+                          image.dataset.fallbackApplied = '1'
+                          image.src = photo.fallbackSrc
+                        }
+                      : undefined
+                  }
                 />
               ))}
             </div>
@@ -456,8 +579,10 @@ function App() {
               the latter half of my life there. Growing up between two cities has
               shaped both my perspective and my sound. I create folk and indie music,
               play guitar, and sing — music has always been the biggest part of my
-              life. At Drexel, I’ve immersed myself in the world of the music industry
-              and discovered a strong interest in publishing, A&R, and marketing. I’m
+              life. At Drexel, I’ve immersed myself in the world of the music industry.
+              <br />
+              <br />
+              I’ve discovered a strong interest in publishing, A&R, and marketing. I’m
               excited to use both my creative and business skills to collaborate, build
               meaningful projects, and create magic with other people.
             </p>
@@ -465,9 +590,11 @@ function App() {
               {aboutPhotos.map((photo, index) => (
                 <div
                   key={photo.src}
-                  className={`carousel-card ${
-                    pulledPhoto === index ? 'is-pulled' : ''
-                  } ${dissolvePhoto === index ? 'is-dissolve' : ''}`}
+                  className={`carousel-card carousel-card--${
+                    index === 0 ? 'left' : index === 1 ? 'center' : 'right'
+                  } ${pulledPhoto === index ? 'is-pulled' : ''} ${
+                    dissolvePhoto === index ? 'is-dissolve' : ''
+                  }`}
                   onMouseEnter={() => handlePhotoEnter(index)}
                   onMouseLeave={() => handlePhotoLeave(index)}
                   onClick={() => handlePhotoClick(index)}
@@ -526,6 +653,8 @@ function App() {
                     key={item.src}
                     src={item.src}
                     alt={item.alt}
+                    loading="lazy"
+                    decoding="async"
                     onClick={() => openLightbox('main', index)}
                   />
                 ))}
@@ -542,6 +671,8 @@ function App() {
                     key={item.src}
                     src={item.src}
                     alt={item.alt}
+                    loading="lazy"
+                    decoding="async"
                     onClick={() => openLightbox('sketch', index)}
                   />
                 ))}
@@ -558,6 +689,8 @@ function App() {
                     key={item.src}
                     src={item.src}
                     alt={item.alt}
+                    loading="lazy"
+                    decoding="async"
                     onClick={() => openLightbox('other', index)}
                   />
                 ))}
@@ -567,7 +700,7 @@ function App() {
         </div>
 
         <div className="content-column content-column--right">
-          <section className="card music" id="music">
+          <section className="card music" id="music" ref={musicSectionRef}>
             <h2>Music</h2>
             <div className="music-grid">
               <a
@@ -592,26 +725,40 @@ function App() {
                 <span>EP coming</span>
               </div>
             </div>
-            <div className="spotify-embeds" aria-label="Spotify embeds">
-              <iframe
-                title="Spotify player: new days"
-                src="https://open.spotify.com/embed/track/3h1TKA52GbJFxUGO9rxhOS"
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                loading="lazy"
-              />
-              <iframe
-                title="Spotify player: barcelona"
-                src="https://open.spotify.com/embed/track/0y5GDkAymUZUfA9lBorblt"
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                loading="lazy"
-              />
-              <iframe
-                className="spotify-embed-square"
-                title="Spotify player: Tessie radio"
-                src="https://open.spotify.com/embed/playlist/37i9dQZF1E4viNvR0Y1zFY"
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                loading="lazy"
-              />
+            <div
+              className={`spotify-embeds ${spotifyEmbedsReady ? 'is-ready' : 'is-pending'}`}
+              aria-label="Spotify embeds"
+            >
+              {SPOTIFY_EMBEDS.map((embed) => (
+                <div
+                  key={embed.id}
+                  className={`spotify-frame-shell spotify-frame-shell--${embed.type} ${
+                    spotifyLoaded[embed.id] ? 'is-loaded' : ''
+                  }`}
+                >
+                  {!spotifyEmbedsReady && (
+                    <div className="spotify-placeholder" aria-hidden="true">
+                      <span>Loading Spotify...</span>
+                    </div>
+                  )}
+                  {spotifyEmbedsReady && (
+                    <>
+                      {!spotifyLoaded[embed.id] && (
+                        <div className="spotify-placeholder" aria-hidden="true">
+                          <span>Loading Spotify...</span>
+                        </div>
+                      )}
+                      <iframe
+                        title={embed.title}
+                        src={embed.src}
+                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                        loading="lazy"
+                        onLoad={() => handleSpotifyLoad(embed.id)}
+                      />
+                    </>
+                  )}
+                </div>
+              ))}
             </div>
           </section>
         </div>
@@ -661,7 +808,11 @@ function App() {
               <button className="lightbox-nav" type="button" onClick={goPrev}>
                 ←
               </button>
-              <div className="deck" aria-label={`${activeGallery.title} gallery`}>
+              <div
+                className="deck"
+                aria-label={`${activeGallery.title} gallery`}
+                style={{ '--deck-ratio': lightboxAspectRatio }}
+              >
                 <div className="deck-card is-prev">
                   <img src={activeItems[prevIndex].src} alt={activeItems[prevIndex].alt} />
                 </div>
