@@ -1,0 +1,46 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Space+Grotesk:wght@400;600&family=Gloria+Hallelujah&display=swap');
+
+:root {
+  font-family: 'Space Grotesk', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #3a2a22;
+  background-color: #f7f0dc;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --paper: #fbf4df;
+  --ink: #5b3b2e;
+  --accent: #ff3ea5;
+  --accent-dark: #c21976;
+  --mono: 'Space Grotesk', sans-serif;
+  --script: 'Gloria Hallelujah', cursive;
+  --title: 'Fraunces', serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at top, #fff6d9 0%, #f6e6c8 48%, #f0dbc1 100%);
+  color: var(--ink);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--title);
+  margin: 0;
+}
+
+a {
+  color: inherit;
+}
+
+#root {
+  max-width: 100%;
+}
