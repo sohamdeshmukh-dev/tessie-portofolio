@@ -5,18 +5,18 @@
   line-height: 1.5;
   font-weight: 400;
   color: #222;
-  background-color: #eef1f4;
+  background-color: #84a8e3;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  --bg: #eef1f4;
-  --bg-pattern: none;
-  --paper: #f7f9fc;
+  --bg: #84a8e3;
+  --bg-pattern: linear-gradient(180deg, #96b9ec 0%, #84a8e3 58%, #7ea3e0 100%);
+  --paper: #ffffff;
   --ink: #222;
   --accent: #ff6fa8;
   --accent-dark: #c23b74;
-  --line: rgba(0, 0, 0, 0.06);
+  --line: rgba(27, 58, 90, 0.08);
   --shadow: rgba(0, 0, 0, 0.05);
   --shadow-strong: rgba(0, 0, 0, 0.12);
   --overlay: rgba(10, 10, 10, 0.68);
@@ -50,6 +50,8 @@ body {
   background: var(--bg);
   background-image: var(--bg-pattern);
   color: var(--ink);
+  position: relative;
+  overflow-x: hidden;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -66,4 +68,65 @@ a {
 
 #root {
   max-width: 100%;
+  position: relative;
+  isolation: isolate;
+  z-index: 1;
+}
+
+.sky-cloud-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.sky-cloud {
+  position: absolute;
+  top: var(--cloud-top);
+  width: var(--cloud-size);
+  max-width: none;
+  opacity: var(--cloud-opacity);
+  filter: blur(var(--cloud-blur));
+  transform-origin: center;
+  will-change: transform, opacity;
+  user-select: none;
+}
+
+.sky-cloud.cloud-drift-right {
+  left: -46vw;
+  animation: cloudDriftRight var(--cloud-duration) linear infinite;
+  animation-delay: var(--cloud-delay);
+}
+
+.sky-cloud.cloud-drift-left {
+  right: -46vw;
+  animation: cloudDriftLeft var(--cloud-duration) linear infinite;
+  animation-delay: var(--cloud-delay);
+}
+
+@keyframes cloudDriftRight {
+  from {
+    transform: translate3d(-12vw, 0, 0) scale(var(--cloud-depth));
+  }
+
+  to {
+    transform: translate3d(166vw, 0, 0) scale(var(--cloud-depth));
+  }
+}
+
+@keyframes cloudDriftLeft {
+  from {
+    transform: translate3d(12vw, 0, 0) scale(var(--cloud-depth));
+  }
+
+  to {
+    transform: translate3d(-166vw, 0, 0) scale(var(--cloud-depth));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sky-cloud {
+    animation: none;
+  }
 }

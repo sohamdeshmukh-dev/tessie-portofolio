@@ -15,7 +15,42 @@ function App() {
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   }
 
+  const createCloud = (index, withOffset = true) => {
+    const size = 120 + Math.random() * 170
+    const top =
+      Math.random() < 0.8
+        ? 1 + Math.pow(Math.random(), 1.6) * 48
+        : 52 + Math.random() * 18
+    const duration = 180 + Math.random() * 220
+    const delay = withOffset ? -Math.random() * duration : 0
+    const opacity = 0.24 + Math.random() * 0.34
+    const blur = Math.random() * 1.6
+    const depth = 0.9 + Math.random() * 0.5
+
+    return {
+      id: `cloud-${index}-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+      size,
+      top,
+      duration,
+      delay,
+      opacity,
+      blur,
+      depth,
+    }
+  }
+
   const [theme, setTheme] = useState(getInitialTheme)
+  const [skyClouds, setSkyClouds] = useState(() =>
+    Array.from({ length: 8 }, (_, index) => createCloud(index, true))
+  )
+
+  const respawnCloud = (index) => {
+    setSkyClouds((prev) =>
+      prev.map((cloud, cloudIndex) =>
+        cloudIndex === index ? createCloud(cloudIndex, false) : cloud
+      )
+    )
+  }
   const galleries = {
     main: {
       title: 'Main',
@@ -89,6 +124,38 @@ function App() {
     { src: photo1, alt: 'Photo 1' },
     { src: photo2, alt: 'Photo 2' },
     { src: photo3, alt: 'Photo 3' },
+  ]
+
+  const heroCarouselPhotos = [
+    { src: '/images/carousel/first%20picture.jpeg', alt: 'Carousel photo 1' },
+    {
+      src: '/images/carousel/03547055-964D-4AF6-85C2-B0820D1E709A_1_105_c.jpeg',
+      alt: 'Carousel photo 2',
+    },
+    {
+      src: '/images/carousel/19F33636-B244-4FB6-AE20-D794C8AEB262_4_5005_c.jpeg',
+      alt: 'Carousel photo 3',
+    },
+    {
+      src: '/images/carousel/32C87F29-DEDD-45C4-9881-79112C744A7B.jpeg',
+      alt: 'Carousel photo 4',
+    },
+    {
+      src: '/images/carousel/73C61091-3BD2-41B4-9D8B-7EB6546C70EE_1_105_c.jpeg',
+      alt: 'Carousel photo 5',
+    },
+    {
+      src: '/images/carousel/BC9FCA7F-3193-487B-82B7-760685B6579C.jpeg',
+      alt: 'Carousel photo 6',
+    },
+    {
+      src: '/images/carousel/DF1461EC-C81B-4AE4-9527-1BB8876E622F_4_5005_c.jpeg',
+      alt: 'Carousel photo 7',
+    },
+    {
+      src: '/images/carousel/FE0F4436-D164-443F-BACB-674523C9B981_1_105_c.jpeg',
+      alt: 'Carousel photo 8',
+    },
   ]
 
   const [activeArt, setActiveArt] = useState(null)
@@ -215,15 +282,38 @@ function App() {
   }
 
   return (
-    <div className="page">
-      <header className="card hero" id="home">
+    <>
+      {theme !== 'dark' && (
+        <div className="sky-cloud-layer" aria-hidden="true">
+          {skyClouds.map((cloud, index) => (
+            <img
+              key={cloud.id}
+              className="sky-cloud cloud-drift-left"
+              src="/images/cloud.png"
+              alt=""
+              onAnimationIteration={() => respawnCloud(index)}
+              style={{
+                '--cloud-size': `${cloud.size}px`,
+                '--cloud-top': `${cloud.top}%`,
+                '--cloud-duration': `${cloud.duration}s`,
+                '--cloud-delay': `${cloud.delay}s`,
+                '--cloud-opacity': cloud.opacity,
+                '--cloud-blur': `${cloud.blur}px`,
+                '--cloud-depth': cloud.depth,
+              }}
+            />
+          ))}
+        </div>
+      )}
+      <div className="page">
+        <header className="card hero" id="home">
         <div className="hero-top">
           <div className="hero-spacer" aria-hidden="true" />
           <nav className="nav">
-            <a href="#about">about</a>
-            <a href="#music">music</a>
-            <a href="#art">art</a>
-            <a href="#contact">contact</a>
+            <a href="#about">About</a>
+            <a href="#music">Music</a>
+            <a href="#art">Art</a>
+            <a href="#contact">Contact</a>
           </nav>
           <button
             className="theme-toggle"
@@ -291,6 +381,37 @@ function App() {
           </div>
         </div>
       </header>
+
+      <section className="card hero-carousel" aria-label="Featured photo carousel">
+        <div className="hero-carousel-strip">
+          <div className="hero-carousel-track">
+            <div className="hero-carousel-sequence">
+              {heroCarouselPhotos.map((photo, index) => (
+                <img
+                  key={`hero-seq-a-${index}-${photo.src}`}
+                  className="hero-carousel-item"
+                  src={photo.src}
+                  alt={photo.alt}
+                  loading={index < 3 ? 'eager' : 'lazy'}
+                  decoding={index < 3 ? 'sync' : 'async'}
+                />
+              ))}
+            </div>
+            <div className="hero-carousel-sequence hero-carousel-sequence--clone" aria-hidden="true">
+              {heroCarouselPhotos.map((photo, index) => (
+                <img
+                  key={`hero-seq-b-${index}-${photo.src}`}
+                  className="hero-carousel-item"
+                  src={photo.src}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
 
       <div className="content-columns">
         <div className="content-column content-column--left">
@@ -498,37 +619,38 @@ function App() {
           </li>
         </ul>
       </section>
-      {lightbox.open && (
-        <div className="lightbox" role="dialog" aria-modal="true">
-          <button className="lightbox-close" type="button" onClick={closeLightbox}>
-            close
-          </button>
-          <div className="lightbox-backdrop" onClick={closeLightbox} />
-          <div className="lightbox-content">
-            <button className="lightbox-nav" type="button" onClick={goPrev}>
-              ←
+        {lightbox.open && (
+          <div className="lightbox" role="dialog" aria-modal="true">
+            <button className="lightbox-close" type="button" onClick={closeLightbox}>
+              close
             </button>
-            <div className="deck" aria-label={`${activeGallery.title} gallery`}>
-              <div className="deck-card is-prev">
-                <img src={activeItems[prevIndex].src} alt={activeItems[prevIndex].alt} />
+            <div className="lightbox-backdrop" onClick={closeLightbox} />
+            <div className="lightbox-content">
+              <button className="lightbox-nav" type="button" onClick={goPrev}>
+                ←
+              </button>
+              <div className="deck" aria-label={`${activeGallery.title} gallery`}>
+                <div className="deck-card is-prev">
+                  <img src={activeItems[prevIndex].src} alt={activeItems[prevIndex].alt} />
+                </div>
+                <div className="deck-card is-current">
+                  <img
+                    src={activeItems[lightbox.index].src}
+                    alt={activeItems[lightbox.index].alt}
+                  />
+                </div>
+                <div className="deck-card is-next">
+                  <img src={activeItems[nextIndex].src} alt={activeItems[nextIndex].alt} />
+                </div>
               </div>
-              <div className="deck-card is-current">
-                <img
-                  src={activeItems[lightbox.index].src}
-                  alt={activeItems[lightbox.index].alt}
-                />
-              </div>
-              <div className="deck-card is-next">
-                <img src={activeItems[nextIndex].src} alt={activeItems[nextIndex].alt} />
-              </div>
+              <button className="lightbox-nav" type="button" onClick={goNext}>
+                →
+              </button>
             </div>
-            <button className="lightbox-nav" type="button" onClick={goNext}>
-              →
-            </button>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   )
 }
 

@@ -2,6 +2,8 @@
   max-width: 1180px;
   margin: 0 auto;
   padding: 72px 24px 96px;
+  position: relative;
+  z-index: 1;
 }
 
 .card {
@@ -17,6 +19,58 @@
 
 .hero {
   margin-bottom: 36px;
+}
+
+.hero-carousel {
+  margin-bottom: 36px;
+  padding: 20px;
+}
+
+.hero-carousel-strip {
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+.hero-carousel-track {
+  display: flex;
+  width: max-content;
+  gap: 18px;
+  animation: heroCarouselScroll 55s linear infinite;
+  will-change: transform;
+}
+
+.hero-carousel-strip:hover .hero-carousel-track {
+  animation-play-state: paused;
+}
+
+.hero-carousel-sequence {
+  display: flex;
+  gap: 18px;
+}
+
+.hero-carousel-item {
+  width: clamp(190px, 20vw, 270px);
+  height: clamp(150px, 15vw, 210px);
+  object-fit: cover;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  box-shadow: 0 8px 24px var(--shadow);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  flex: 0 0 auto;
+}
+
+.hero-carousel-item:hover {
+  transform: translateY(-4px) scale(1.04);
+  box-shadow: 0 16px 32px var(--shadow-strong);
+}
+
+@keyframes heroCarouselScroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-50% - 9px));
+  }
 }
 
 .content-columns {
@@ -127,7 +181,7 @@
 
 .hero-links {
   display: grid;
-  gap: 10px;
+  gap: 16px;
   font-family: var(--mono);
   text-transform: none;
   justify-items: start;
@@ -136,22 +190,24 @@
 .hero-links a {
   color: var(--accent-dark);
   text-decoration: none;
-  border-bottom: 2px dashed var(--accent);
-  padding-bottom: 6px;
+  border-bottom: 0;
+  padding-bottom: 0;
   width: fit-content;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 16px;
+  font-size: 2rem;
+  line-height: 1.1;
 }
 
 .hero-links a:hover {
   color: var(--ink);
-  border-bottom-color: var(--ink);
+  transform: translateY(-1px);
 }
 
 .social-icon {
-  width: 20px;
-  height: 20px;
+  width: 40px;
+  height: 40px;
   display: inline-block;
   filter: saturate(0.9);
   fill: currentColor;
@@ -590,6 +646,39 @@
     grid-template-columns: 1fr;
   }
 
+  .hero-carousel {
+    padding: 16px;
+  }
+
+  .hero-carousel-strip {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 6px;
+  }
+
+  .hero-carousel-track {
+    animation: none;
+    width: max-content;
+  }
+
+  .hero-carousel-sequence {
+    gap: 12px;
+  }
+
+  .hero-carousel-sequence--clone {
+    display: none;
+  }
+
+  .hero-carousel-item {
+    width: 74vw;
+    max-width: 360px;
+    height: 48vw;
+    max-height: 240px;
+    scroll-snap-align: start;
+  }
+
   .hero-top {
     grid-template-columns: 1fr auto;
     gap: 12px;
@@ -643,5 +732,11 @@
   .art-gallery--sketch,
   .art-gallery--other {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-carousel-track {
+    animation: none;
   }
 }
